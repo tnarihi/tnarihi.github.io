@@ -9,7 +9,7 @@ title : オープンソースDeepLearningフレームワークのCAFFEのLayer�
 
 UC BerkeleyのBVLCを中心にオープンソースで開発しているDeep LearningライブラリのCAFFE。C++/CUDAで書かれているので使い勝手が良く素晴らしいライブラリ。定番のVision系タスクのことは大体できるが、それ以外はまだ開発中って感じ（そもそも開発されるか不明）で、機能拡張したくなる場合があると思う。
 そこで、Layerを作るために知っておくべきことをメモ。殴り書き。（誰かが見ると思って書いていないので、上から読んでいっても一回では理解できないと思う。３回くらい読めばわかるかも。文章も適当。）
-もし、見る人がいるとすれば、CAFFEの使い方がある程度わかっている人向けの内容。
+もし、見て参考にする人がいるとすれば、CAFFEの使い方がある程度わかっている人向けの内容。
 
 # CAFFEの基礎
 
@@ -35,8 +35,7 @@ protobufの定義はすべて`src/caffe/proto/caffe.proto`に定義されてい�
 の神クラス的な感じで、すべてのLayerの設定を記述できる形になっている。
 変数にConvolution, InnerProduct, Reluなどすべての設定を持っているのだ。
 
-*このParameterプロトコルたちにはパラメータのBlobの定義はないみたい。ど
- こでSet,getを定義しているのか要確認*
+*このParameterプロトコルたちにはパラメタのBlobは含まれないので別途レイヤーのクラスでハンドリングしている。読み書きはBlobProtoでやっていると思うが、どのようなフォーマットで学習結果を書き込んでいるかは要確認。Solverクラスに実装があるはず*
 
 ## Blobクラス
 
@@ -79,7 +78,7 @@ message NetParameter {
 `Init`メソッドがコンストラクタで呼ばれネットワークを実際に初期化している。中身は結構複雑でDAGをつなげるところとか、blobの名前から各レイヤーの入出力のblobを作りだしたり、LayerのSetUpを読んだりしている。ちょっと読んだ感じ、FilterNetでlayersごとにメンバであるinclude, excludeオプションをもとに、layresのフィルタリングをしていたり、InsertSplitで２回以上使われているblobをSplitLayerで分岐させたりしている（*なぜかはちゃんと読んでいないので不明。多分同じblobをそのまま異なるLayerの入力にできるようにはなっていないと思われる。BPでdiff_への上書きが発生するから？*）。パラメタシェアリングもここで行っている。BlobのShareDataを使ってblobのdataを同じメモリを参照するようにしている。BlobクラスにはShare{Data,Diff}メソッドが定義されている、*Diffはシェアされないことに注意*これは`Update`の’実装でdiffをownerに集約するところからもわかる。誰がownerかはparam_owners_に記録されている。
 
 `Forward`メソッドを見ると、Forwardはblob(s)を受けるようになっているものとstringでblobvectorを受けるものがあるよう。
-ここではnet_input_blobs_に受けとったblobを設定してForwardPrefilledメソッドを呼び出す。
+ここではnet_input_blobs_に受けとったblobを設定してForwardPrefilledメソッドを呼び出す（学習コード：Solverクラスだとデータはデータレイヤーで勝手に読みだすのでnet_input_blobs_はダミーのblobがセットされる）。
 そして中ではForwardFromToが呼ばれlayerごとにForwardが呼ばれる。ここで毎回Reshapeが呼ばれていることに気づいた。つまり、ひとつのバッチ処理ごとにblobのサイズが変わってもちゃんと動くということだ。Layer->Forward(bottoms, tops)はlossを返すようになっており、それが足し込まれて全体のロスを計算している。
 
 `Backward`では単にBackwardFromToで一番後ろから前までを呼ぶ。それだけ。*LossLayerは奇妙なメンバdiff_がいて、Forwardの段階でそこに微分の値が代入されているっぽい。Backwardの実装ではこれをtop diffの代わりに使って、top diffはloss_weightに使われている？*あと、*BackpropされたdiffたちはSolverで使われるのかな*。
