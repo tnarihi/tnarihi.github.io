@@ -315,8 +315,7 @@ Prototxtのネット定義のenum LayerType の LIBSVM_DATA からLIBSVMDataLaye
         line.find('void WindowDataLayer<Dtype>::DataLayerSetUp') == -1):
        error(filename, linenum, 'caffe/data_layer_setup', 2,
 {% endhighlight %}
-なんか独自にLINTのチェッカーをインプリしているようだが、なんか例外的なものに追加しないといけないみたい。めんどくてあんま呼んでない。
-
+なんか独自にLINTのチェッカーをインプリしているようだが、なんか例外的なものに追加しないといけないみたい。中読んでないので理解してない。
 ### 6. 親切にExampleでも追加しとく
 
 IPython notebookで使い方の[Example](http://nbviewer.ipython.org/github/tnarihi/caffe/blob/libsvmdatalayer/examples/libsvm_format_data_into_caffe.ipynb)を作った。
@@ -328,4 +327,4 @@ IPython notebookで使い方の[Example](http://nbviewer.ipython.org/github/tnar
 
 * datum_size_とかのメンバ変数ってなんのために設定してんの？
 
-* 複数のDataレイヤーを使うような状況でShuffleすると全部足並みが揃わない？
+* 複数のDataレイヤーを使うような状況でShuffleすると全部足並みが揃わない？揃わない。
