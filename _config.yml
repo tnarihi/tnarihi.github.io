@@ -12,10 +12,10 @@ title : tnarihiの技術ブログ
 tagline: 続くのか
 author :
   name : Takuya Narihira
-  email : dvbscb@gmail.com
+#  email : 
   github : tnarihi
-  twitter : 
-  feedburner : 
+#  twitter : 
+#  feedburner : 
 
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt 
